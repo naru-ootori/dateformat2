@@ -217,7 +217,7 @@ class MainWindow(QMainWindow):
                 run.font.name = 'Times New Roman'
                 run.font.size = Pt(14)
 
-        table                  = document.add_table(rows = 1, cols = 2)
+        table                  = document.add_table(rows = table_size+1, cols = 2)
         table.style            = 'Table Grid'
         table.alignment        = WD_TABLE_ALIGNMENT.CENTER
         table.rows.height_rule = WD_ROW_HEIGHT_RULE.AT_LEAST
@@ -225,14 +225,15 @@ class MainWindow(QMainWindow):
         hdr_cells              = table.rows[0].cells
         hdr_cells[0].text      = 'Дата и время начала сеанса'
         hdr_cells[1].text      = 'Интернет-адрес рабочего места абонента'
-
+      
         for i in range(0, table_size):
 
-            row_cells         = table.add_row().cells
+            row_cells         = table.rows[i+1].cells
             row_cells[0].text = source_log[i][0]
             row_cells[1].text = source_log[i][1]
-            
-            for cell in row_cells:
+            self.progress.setValue(i+1)
+         
+            """for cell in row_cells:
                 cell.vertical_alignment = WD_ALIGN_VERTICAL.CENTER
                 
                 for par in cell.paragraphs:
@@ -243,8 +244,6 @@ class MainWindow(QMainWindow):
                     for run in par.runs:
                         run.font.name = 'Arial'
                         run.font.size = Pt(10)
-            
-            self.progress.setValue(i+1)
 
         for cell in table.row_cells(0):
             for par in cell.paragraphs:
@@ -252,8 +251,8 @@ class MainWindow(QMainWindow):
                 for run in par.runs:
                     run.font.name = 'Arial'
                     run.font.size = Pt(10)
-                    run.font.bold = True
-
+                    run.font.bold = True"""
+    
         docpath = str(savepath) + '\\' + '{0}.docx'.format(orgname)
 
         print('----')
