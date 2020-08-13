@@ -148,6 +148,8 @@ class MainWindow(QMainWindow):
             timestamp[2] = timestamp[2].rstrip(',')
 
             ip = clean_line[1]
+            if ip == '-':
+                continue
 
             raw_datetime =(timestamp[0] + ' ' +
                             timestamp[1] + ' ' +
@@ -229,11 +231,10 @@ class MainWindow(QMainWindow):
             row_cells         = table.add_row().cells
             row_cells[0].text = source_log[i][0]
             row_cells[1].text = source_log[i][1]
-            self.progress.setValue(i+1)
-
-        for col in table.columns:
-            for cell in col.cells:
+            
+            for cell in row_cells:
                 cell.vertical_alignment = WD_ALIGN_VERTICAL.CENTER
+                
                 for par in cell.paragraphs:
                     par.paragraph_format.alignment         = WD_ALIGN_PARAGRAPH.LEFT
                     par.paragraph_format.line_spacing_rule = WD_LINE_SPACING.SINGLE
@@ -242,11 +243,15 @@ class MainWindow(QMainWindow):
                     for run in par.runs:
                         run.font.name = 'Arial'
                         run.font.size = Pt(10)
+            
+            self.progress.setValue(i+1)
 
         for cell in table.row_cells(0):
             for par in cell.paragraphs:
                 par.paragraph_format.alignment = WD_ALIGN_PARAGRAPH.CENTER
                 for run in par.runs:
+                    run.font.name = 'Arial'
+                    run.font.size = Pt(10)
                     run.font.bold = True
 
         docpath = str(savepath) + '\\' + '{0}.docx'.format(orgname)
