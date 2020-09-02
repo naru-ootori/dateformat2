@@ -11,6 +11,7 @@ from docx.enum.table import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 import docx
+import docm
 
 with open('config.txt', 'r', encoding="utf-8") as f:
 
@@ -218,10 +219,6 @@ class MainWindow(QMainWindow):
                 run.font.size = Pt(14)
 
         table                  = document.add_table(rows = table_size+1, cols = 2)
-        table.style            = 'Table Grid'
-        table.alignment        = WD_TABLE_ALIGNMENT.CENTER
-        table.rows.height_rule = WD_ROW_HEIGHT_RULE.AT_LEAST
-        table.rows[0].height   = Cm(0.8)
         hdr_cells              = table.rows[0].cells
         hdr_cells[0].text      = 'Дата и время начала сеанса'
         hdr_cells[1].text      = 'Интернет-адрес рабочего места абонента'
@@ -233,25 +230,7 @@ class MainWindow(QMainWindow):
             row_cells[1].text = source_log[i][1]
             self.progress.setValue(i+1)
          
-            """for cell in row_cells:
-                cell.vertical_alignment = WD_ALIGN_VERTICAL.CENTER
-                
-                for par in cell.paragraphs:
-                    par.paragraph_format.alignment         = WD_ALIGN_PARAGRAPH.LEFT
-                    par.paragraph_format.line_spacing_rule = WD_LINE_SPACING.SINGLE
-                    par.paragraph_format.space_before      = Pt(0)
-                    par.paragraph_format.space_after       = Pt(0)
-                    for run in par.runs:
-                        run.font.name = 'Arial'
-                        run.font.size = Pt(10)
-
-        for cell in table.row_cells(0):
-            for par in cell.paragraphs:
-                par.paragraph_format.alignment = WD_ALIGN_PARAGRAPH.CENTER
-                for run in par.runs:
-                    run.font.name = 'Arial'
-                    run.font.size = Pt(10)
-                    run.font.bold = True"""
+        docm.table_format(table)
     
         docpath = str(savepath) + '\\' + '{0}.docx'.format(orgname)
 
