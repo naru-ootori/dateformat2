@@ -168,7 +168,7 @@ class MainWindow(QMainWindow):
 
         return(final_log)
 
-    def table_format(table):
+    def table_format(self, table):
 
         table.style            = 'Table Grid'
         table.alignment        = WD_TABLE_ALIGNMENT.CENTER
@@ -265,7 +265,7 @@ class MainWindow(QMainWindow):
             row_cells[1].text = source_log[i][1]
             self.progress.setValue(i+1)
          
-        docm.table_format(table)
+        self.table_format(table)
     
         docpath = str(savepath) + '\\' + '{0}.docx'.format(orgname)
 
