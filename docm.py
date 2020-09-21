@@ -33,3 +33,4 @@ def table_format(table):
             
             for run in par.runs:
                 run.font.bold = True
+                

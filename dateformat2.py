@@ -149,7 +149,7 @@ class MainWindow(QMainWindow):
             timestamp[2] = timestamp[2].rstrip(',')
 
             ip = clean_line[1]
-            if ip == '-':
+            if ip == ' - ':
                 continue
 
             raw_datetime =(timestamp[0] + ' ' +
@@ -161,6 +161,10 @@ class MainWindow(QMainWindow):
             rus_datetime = datetime.datetime.strftime(std_datetime, '%d.%m.%Y, %H:%M:%S')
 
             final_line  = [rus_datetime, ip]
+            
+            if final_log != [] and final_line == final_log[-1]:
+                continue
+                
             final_log.append(final_line)
 
         return(final_log)
@@ -168,6 +172,8 @@ class MainWindow(QMainWindow):
     def save_document(self):
 
         source_log = self.convert_log()
+
+        
         savepath   = Path(self.qle_output.text().strip())
         orgname    = self.qle_orgname.text().translate(str.maketrans('', '', '.«»\'\"')).strip()
 
