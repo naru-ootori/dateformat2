@@ -31,7 +31,7 @@ class MainWindow(QMainWindow):
 
         self.resize(800, 695)
         self.center()
-        self.setWindowTitle('Формататор логов 2.0')
+        self.setWindowTitle('Формататор логов 2.1')
 
         label_output = QLabel(self)
         label_output.move(10, 10)
@@ -98,6 +98,7 @@ class MainWindow(QMainWindow):
         self.qle_guid = QLineEdit(self)
         self.qle_guid.setGeometry(60, 630, 300, 20)
         self.qle_guid.setFont(QFont('Arial', 11))
+        self.qle_guid.setMaxLength(36)
         self.qle_guid.textChanged.connect(self.guid_to_hex)
 
         label_hex = QLabel(self)
@@ -108,6 +109,11 @@ class MainWindow(QMainWindow):
         self.qle_hex = QLineEdit(self)
         self.qle_hex.setGeometry(60, 660, 300, 20)
         self.qle_hex.setFont(QFont('Arial', 11))
+        
+        self.clear_button = QPushButton('Очистить поля', self)
+        self.clear_button.setFont(QFont('Arial', 11))
+        self.clear_button.setGeometry(530, 620, 260, 60)
+        self.clear_button.clicked.connect(self.clear_fields)
 
         self.show()
 
@@ -221,7 +227,7 @@ class MainWindow(QMainWindow):
         else:
             stdname = orgname
 
-        inn        = self.qle_inn.text().strip()
+        inn = self.qle_inn.text().strip()
         if inn == '':
             inn = '0000000000'
 
@@ -230,7 +236,7 @@ class MainWindow(QMainWindow):
         self.progress.setMaximum(table_size)
         self.progress.setValue(0)
 
-        document   = docx.Document('template.docx')
+        document = docx.Document('template.docx')
 
         document.sections[-1].top_margin    = Cm(1)
         document.sections[-1].bottom_margin = Cm(1)
@@ -293,6 +299,12 @@ class MainWindow(QMainWindow):
             binascii.hexlify,(g[3::-1], g[5:3:-1], g[7:5:-1], g[8:]))))
 
         self.qle_hex.setText(hexvalue)
+
+    def clear_fields(self):
+        self.qle_guid.setText('')
+        self.log_paste.setText('')
+        self.qle_inn.setText('')
+        self.qle_orgname.setText('')
 
 APP = QApplication(sys.argv)
 MW = MainWindow()
