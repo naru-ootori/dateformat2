@@ -99,8 +99,9 @@ class MainWindow(QMainWindow):
         self.qle_guid.setGeometry(60, 630, 300, 20)
         self.qle_guid.setFont(QFont('Arial', 11))
         self.qle_guid.setMaxLength(36)
+        #self.qle_guid.setInputMask('HHHHHHHH-HHHH-HHHH-HHHH-HHHHHHHHHHHH')
         self.qle_guid.textChanged.connect(self.guid_to_hex)
-
+        
         label_hex = QLabel(self)
         label_hex.setGeometry(10, 660, 780, 20)
         label_hex.setFont(QFont('Arial', 11))
@@ -293,12 +294,15 @@ class MainWindow(QMainWindow):
     def guid_to_hex(self):
 
         guid = self.qle_guid.text()
-
-        g = binascii.unhexlify(guid.translate(str.maketrans('', '', '-\r\n ')))
-        hexvalue = ''.join(map(bytes.decode, map(
-            binascii.hexlify,(g[3::-1], g[5:3:-1], g[7:5:-1], g[8:]))))
-
-        self.qle_hex.setText(hexvalue)
+        
+        if len(guid) != 36:
+            self.qle_hex.setText('Введён некорректный GUID')
+            
+        else:
+            g = binascii.unhexlify(guid.translate(str.maketrans('', '', '-\r\n ')))
+            hexvalue = ''.join(map(bytes.decode, map(
+                        binascii.hexlify,(g[3::-1], g[5:3:-1], g[7:5:-1], g[8:]))))
+            self.qle_hex.setText(hexvalue)
 
     def clear_fields(self):
         self.qle_guid.setText('')
