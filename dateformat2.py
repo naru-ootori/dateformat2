@@ -296,7 +296,7 @@ class MainWindow(QMainWindow):
         guid = self.qle_guid.text()
         
         if len(guid) != 36:
-            self.qle_hex.setText('Введён некорректный GUID')
+            self.qle_hex.setText('—')
             
         else:
             g = binascii.unhexlify(guid.translate(str.maketrans('', '', '-\r\n ')))
