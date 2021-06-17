@@ -206,7 +206,9 @@ class MainWindow(QMainWindow):
                     run.font.bold = True
 
     def save_document(self):
-
+    
+        start = datetime.datetime.now()
+        
         source_log = self.convert_log()
 
         
@@ -260,18 +262,20 @@ class MainWindow(QMainWindow):
                 run.font.name = 'Times New Roman'
                 run.font.size = Pt(14)
 
-        table                  = document.add_table(rows = table_size+1, cols = 2)
+        columns = 2
+        table                  = document.add_table(rows = table_size+1, cols = columns)
         hdr_cells              = table.rows[0].cells
         hdr_cells[0].text      = 'Дата и время начала сеанса'
         hdr_cells[1].text      = 'Интернет-адрес рабочего места абонента'
       
-        table_rows = table.rows
-      
+        table_cells = table._cells
+ 
         for i in range(0, table_size):
-
-            row_cells         = table_rows[i+1].cells
+           
+            row_cells = table_cells[(i+1)*columns:(i+2)*columns]
             row_cells[0].text = source_log[i][0]
             row_cells[1].text = source_log[i][1]
+            
             self.progress.setValue(i+1)
          
         self.table_format(table)
@@ -279,12 +283,13 @@ class MainWindow(QMainWindow):
         docpath = str(savepath) + '\\' + '{0}.docx'.format(orgname)
 
         print('----')
+        print(type(table_cells))
+        print(table_cells[0:10])
         print('Наименование организации:', stdname)
         print('ИНН:', inn)
         print('Строк записано:', table_size)
         print('Сохранение файла:', docpath)
-        print('----')
-
+        
         try:
             document.save(docpath)
         except OSError as e:
@@ -292,7 +297,12 @@ class MainWindow(QMainWindow):
 
         args = [word_path, '/n', docpath]
         Popen(args)
-
+        
+        end = datetime.datetime.now()
+        
+        print('Затрачено времени: {0}'.format(end - start))
+        print('----')
+        
     def guid_to_hex(self):
 
         guid = self.qle_guid.text()
