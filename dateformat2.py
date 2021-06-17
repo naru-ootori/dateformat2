@@ -265,9 +265,11 @@ class MainWindow(QMainWindow):
         hdr_cells[0].text      = 'Дата и время начала сеанса'
         hdr_cells[1].text      = 'Интернет-адрес рабочего места абонента'
       
+        table_rows = table.rows
+      
         for i in range(0, table_size):
 
-            row_cells         = table.rows[i+1].cells
+            row_cells         = table_rows[i+1].cells
             row_cells[0].text = source_log[i][0]
             row_cells[1].text = source_log[i][1]
             self.progress.setValue(i+1)
