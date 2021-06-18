@@ -21,13 +21,15 @@ with open('config.txt', 'r', encoding="utf-8") as f:
     end_date     = datetime.datetime.now().strftime('%d.%m.%Y')
 
 class MainWindow(QMainWindow):
+    '''Draw main window'''
 
     def __init__(self):
 
         super().__init__()
-        self.initUI()
+        self.init_ui()
 
-    def initUI(self):
+    def init_ui(self):
+        '''UI initialization'''
 
         self.resize(800, 695)
         self.center()
@@ -101,7 +103,7 @@ class MainWindow(QMainWindow):
         self.qle_guid.setMaxLength(36)
         #self.qle_guid.setInputMask('HHHHHHHH-HHHH-HHHH-HHHH-HHHHHHHHHHHH')
         self.qle_guid.textChanged.connect(self.guid_to_hex)
-        
+
         label_hex = QLabel(self)
         label_hex.setGeometry(10, 660, 780, 20)
         label_hex.setFont(QFont('Arial', 11))
@@ -110,7 +112,7 @@ class MainWindow(QMainWindow):
         self.qle_hex = QLineEdit(self)
         self.qle_hex.setGeometry(60, 660, 300, 20)
         self.qle_hex.setFont(QFont('Arial', 11))
-        
+
         self.clear_button = QPushButton('Очистить поля', self)
         self.clear_button.setFont(QFont('Arial', 11))
         self.clear_button.setGeometry(530, 620, 260, 60)
@@ -119,6 +121,7 @@ class MainWindow(QMainWindow):
         self.show()
 
     def center(self):
+        '''Center main window'''
 
         qr = self.frameGeometry()
         cp = QDesktopWidget().availableGeometry().center()
@@ -126,12 +129,16 @@ class MainWindow(QMainWindow):
         self.move(qr.topLeft())
 
     def browse_for_output(self):
+        '''Open brows for output folder window'''
 
-        output_folder = QFileDialog.getExistingDirectory(self, 'Выберите папку для сохранения:')
+        output_folder = QFileDialog.getExistingDirectory(self,
+                                              'Выберите папку для сохранения:')
         output_folder = str(Path(output_folder))
         self.qle_output.setText(output_folder)
 
     def convert_log(self):
+        '''Convert log to Russian date-time format.
+        Black magic fuckery happens here, hard.'''
 
         raw_text   = self.log_paste.toPlainText()
         split_text = raw_text.split('\n')
@@ -147,15 +154,16 @@ class MainWindow(QMainWindow):
             clean_line[0] = clean_line[0][:-4]
 
             timestamp    = clean_line[0].split(' ')
-            timestamp[1] = timestamp[1].translate(str.maketrans('', '', 'stndrdth'))
+            timestamp[1] = timestamp[1].translate(str.maketrans('', '',
+                                                                'stndrdth'))
 
             if len(timestamp[1]) == 1:
                 timestamp[1] = '0' + timestamp[1]
 
             timestamp[2] = timestamp[2].rstrip(',')
 
-            ip = clean_line[1]
-            if ip == ' - ':
+            ip_address = clean_line[1]
+            if ip_address == ' - ':
                 continue
 
             raw_datetime =(timestamp[0] + ' ' +
@@ -163,55 +171,59 @@ class MainWindow(QMainWindow):
                             timestamp[2] + ' ' +
                             timestamp[3])
 
-            std_datetime = datetime.datetime.strptime(raw_datetime, '%B %d %Y %H:%M:%S')
-            rus_datetime = datetime.datetime.strftime(std_datetime, '%d.%m.%Y, %H:%M:%S')
+            std_datetime = datetime.datetime.strptime(raw_datetime,
+                                                      '%B %d %Y %H:%M:%S')
+            rus_datetime = datetime.datetime.strftime(std_datetime,
+                                                      '%d.%m.%Y, %H:%M:%S')
 
-            final_line  = [rus_datetime, ip]
-            
+            final_line  = [rus_datetime, ip_address]
+
             if final_log != [] and final_line == final_log[-1]:
                 continue
-                
+
             final_log.append(final_line)
 
-        return(final_log)
+        return final_log
 
     def table_format(self, table):
+        '''Apply styles to various table elements'''
 
         table.style            = 'Table Grid'
         table.alignment        = WD_TABLE_ALIGNMENT.CENTER
         table.rows.height_rule = WD_ROW_HEIGHT_RULE.AT_LEAST
         table.rows[0].height   = Cm(0.8)
-    
+
         for col in table.columns:
-        
+
             for cell in col.cells:
                 cell.vertical_alignment = WD_ALIGN_VERTICAL.CENTER
-            
+
                 for par in cell.paragraphs:
                     par.paragraph_format.alignment         = WD_ALIGN_PARAGRAPH.LEFT
                     par.paragraph_format.line_spacing_rule = WD_LINE_SPACING.SINGLE
                     par.paragraph_format.space_before      = Pt(0)
                     par.paragraph_format.space_after       = Pt(0)
-                
+
                     for run in par.runs:
                         run.font.name = 'Arial'
                         run.font.size = Pt(10)
-                    
+
         for cell in table.row_cells(0):
-    
+
             for par in cell.paragraphs:
                 par.paragraph_format.alignment = WD_ALIGN_PARAGRAPH.CENTER
-            
+
                 for run in par.runs:
                     run.font.bold = True
 
     def save_document(self):
-    
+        '''Make and save a docx file'''
+
         start = datetime.datetime.now()
-        
+
         source_log = self.convert_log()
 
-        
+
         savepath   = Path(self.qle_output.text().strip())
         orgname    = self.qle_orgname.text().translate(str.maketrans('', '', '.«»\'\"')).strip()
 
@@ -262,24 +274,26 @@ class MainWindow(QMainWindow):
                 run.font.name = 'Times New Roman'
                 run.font.size = Pt(14)
 
-        columns = 2
-        table                  = document.add_table(rows = table_size+1, cols = columns)
-        hdr_cells              = table.rows[0].cells
-        hdr_cells[0].text      = 'Дата и время начала сеанса'
-        hdr_cells[1].text      = 'Интернет-адрес рабочего места абонента'
-      
+        columns           = 2
+        table             = document.add_table(rows = table_size+1,
+                                               cols = columns)
+        hdr_cells         = table.rows[0].cells
+        hdr_cells[0].text = 'Дата и время начала сеанса'
+        hdr_cells[1].text = 'Интернет-адрес рабочего места абонента'
+
+        # pylint: disable=W0212
         table_cells = table._cells
- 
+
         for i in range(0, table_size):
-           
+
             row_cells = table_cells[(i+1)*columns:(i+2)*columns]
             row_cells[0].text = source_log[i][0]
             row_cells[1].text = source_log[i][1]
-            
+
             self.progress.setValue(i+1)
-         
+
         self.table_format(table)
-    
+
         docpath = str(savepath) + '\\' + '{0}.docx'.format(orgname)
 
         print('----')
@@ -289,34 +303,40 @@ class MainWindow(QMainWindow):
         print('ИНН:', inn)
         print('Строк записано:', table_size)
         print('Сохранение файла:', docpath)
-        
+
         try:
             document.save(docpath)
-        except OSError as e:
-            print("Error: {0} - {1}.".format(e.filename, e.strerror))
+        except OSError as error_message:
+            print("Error: {0} - {1}.".format(error_message.filename, error_message.strerror))
 
         args = [word_path, '/n', docpath]
         Popen(args)
-        
+
         end = datetime.datetime.now()
-        
+
         print('Затрачено времени: {0}'.format(end - start))
         print('----')
-        
+
     def guid_to_hex(self):
+        '''Convert GUID to hex format'''
 
         guid = self.qle_guid.text()
-        
+
         if len(guid) != 36:
             self.qle_hex.setText('—')
-            
+
         else:
-            g = binascii.unhexlify(guid.translate(str.maketrans('', '', '-\r\n ')))
+            guid_map = binascii.unhexlify(guid.translate(str.maketrans('', '', '-\r\n ')))
             hexvalue = ''.join(map(bytes.decode, map(
-                        binascii.hexlify,(g[3::-1], g[5:3:-1], g[7:5:-1], g[8:]))))
+                        binascii.hexlify,(guid_map[3::-1],
+                                          guid_map[5:3:-1],
+                                          guid_map[7:5:-1],
+                                          guid_map[8:]))))
             self.qle_hex.setText(hexvalue)
 
     def clear_fields(self):
+        '''Clear input fields'''
+
         self.qle_guid.setText('')
         self.log_paste.setText('')
         self.qle_inn.setText('')
