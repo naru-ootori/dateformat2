@@ -33,7 +33,7 @@ class MainWindow(QMainWindow):
 
         self.resize(800, 695)
         self.center()
-        self.setWindowTitle('Формататор логов 2.1')
+        self.setWindowTitle('Формататор логов 2.2')
 
         label_output = QLabel(self)
         label_output.move(10, 10)
