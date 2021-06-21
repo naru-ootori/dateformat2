@@ -2,6 +2,5 @@ __pycache__
 build
 dist
 config.txt
-test_data.txt
 dateformat2.exe
 dateformat2.spec
