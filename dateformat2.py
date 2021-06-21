@@ -1,16 +1,22 @@
 # coding=utf-8
+'''Date format converter form US style Kibana logs to Russian docx files.'''
 
 from pathlib import Path
 from subprocess import Popen
 import sys
 import datetime
 import binascii
-from docx.shared import *
-from docx.enum.text import *
-from docx.enum.table import *
+
+from docx.enum.text import  WD_ALIGN_PARAGRAPH, WD_LINE_SPACING \
+                            # pylint: disable=E0611
+
+from docx.enum.table import WD_TABLE_ALIGNMENT, WD_ALIGN_VERTICAL, \
+                            WD_ROW_HEIGHT_RULE # pylint: disable=E0611
+
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
-import docx
+from docx import Document
+from docx.shared import Cm, Pt
 
 with open('config.txt', 'r', encoding="utf-8") as f:
 
@@ -19,6 +25,14 @@ with open('config.txt', 'r', encoding="utf-8") as f:
     word_path    = conf[1].replace('\n', '')
     start_date   = conf[2].replace('\n', '')
     end_date     = datetime.datetime.now().strftime('%d.%m.%Y')
+
+with open('template.txt', 'r', encoding="utf-8") as template:
+
+    template_text = template.readlines()
+    paragraph_0   = template_text[0].replace('\n', '')
+    paragraph_1   = template_text[1].replace('\n', '')
+    paragraph_2   = template_text[2].replace('\n', '')
+
 
 class MainWindow(QMainWindow):
     '''Draw main window'''
@@ -123,10 +137,10 @@ class MainWindow(QMainWindow):
     def center(self):
         '''Center main window'''
 
-        qr = self.frameGeometry()
-        cp = QDesktopWidget().availableGeometry().center()
-        qr.moveCenter(cp)
-        self.move(qr.topLeft())
+        window_parameters = self.frameGeometry()
+        center_position   = QDesktopWidget().availableGeometry().center()
+        window_parameters.moveCenter(center_position)
+        self.move(window_parameters.topLeft())
 
     def browse_for_output(self):
         '''Open brows for output folder window'''
@@ -167,9 +181,9 @@ class MainWindow(QMainWindow):
                 continue
 
             raw_datetime =(timestamp[0] + ' ' +
-                            timestamp[1] + ' ' +
-                            timestamp[2] + ' ' +
-                            timestamp[3])
+                           timestamp[1] + ' ' +
+                           timestamp[2] + ' ' +
+                           timestamp[3])
 
             std_datetime = datetime.datetime.strptime(raw_datetime,
                                                       '%B %d %Y %H:%M:%S')
@@ -225,7 +239,8 @@ class MainWindow(QMainWindow):
 
 
         savepath   = Path(self.qle_output.text().strip())
-        orgname    = self.qle_orgname.text().translate(str.maketrans('', '', '.«»\'\"')).strip()
+        orgname    = self.qle_orgname.text().translate(str.maketrans('', '',
+                                                       '.«»\'\"')).strip()
 
         if orgname == '':
             orgname = 'ООО ОРГАНИЗАЦИЯ'
@@ -251,18 +266,16 @@ class MainWindow(QMainWindow):
         self.progress.setMaximum(table_size)
         self.progress.setValue(0)
 
-        document = docx.Document('template.docx')
+        document = Document('template.docx')
 
         document.sections[-1].top_margin    = Cm(1)
         document.sections[-1].bottom_margin = Cm(1)
         document.sections[-1].left_margin   = Cm(2)
         document.sections[-1].right_margin  = Cm(2)
 
-        document.paragraphs[0].text =('В ответ на Ваш запрос информации, касающейся деятельности налогоплательщика {0}, ИНН {1}, являющегося абонентом Системы «ЦентрИнформ» и обслуживающегося на технической площадке оператора ЭДО АО «ЦентрИнформ», сообщаем, что в архитектуре аппаратных и программных компонентов серверной части Системы не предусмотрено специализированных технических средств для записи и хранения полных сведений о сеансах связи абонента с Системой на сетевом уровне.'.format(stdname, inn))
-
-        document.add_paragraph('Также обращаем Ваше внимание, что с 01.03.2018 на технической площадке оператора ЭДО АО «ЦентрИнформ» выполнена реализация требований Приказа ФНС России от 15.02.2018 № ММВ-7-6/97@ о внесении изменений в Приказ ФНС России от 09.11.2010 № ММВ-7-6/535@. Таким образом, информация об интернет-адресе абонента, с которого была осуществлена отправка файла декларации, содержится в файле описания транспортного контейнера и доступна для просмотра средствами локального приемного комплекса «ГНИВЦ ПРИЕМ-3» на стороне территориального налогового органа.')
-
-        document.add_paragraph('Путем анализа имеющихся журналов доступа веб-сервера за период с {0} по {1} было установлено, что в течение указанного периода времени абонент осуществил следующие сеансы связи с сервером Системы:'.format(start_date, end_date))
+        document.paragraphs[0].text = (paragraph_0.format(stdname, inn))
+        document.add_paragraph(paragraph_1)
+        document.add_paragraph(paragraph_2.format(start_date, end_date))
 
         for par in document.paragraphs:
             par.paragraph_format.alignment         = WD_ALIGN_PARAGRAPH.JUSTIFY
@@ -297,8 +310,6 @@ class MainWindow(QMainWindow):
         docpath = str(savepath) + '\\' + '{0}.docx'.format(orgname)
 
         print('----')
-        print(type(table_cells))
-        print(table_cells[0:10])
         print('Наименование организации:', stdname)
         print('ИНН:', inn)
         print('Строк записано:', table_size)
@@ -307,7 +318,8 @@ class MainWindow(QMainWindow):
         try:
             document.save(docpath)
         except OSError as error_message:
-            print("Error: {0} - {1}.".format(error_message.filename, error_message.strerror))
+            print("Error: {0} - {1}.".format(error_message.filename,
+                                             error_message.strerror))
 
         args = [word_path, '/n', docpath]
         Popen(args)
@@ -326,7 +338,8 @@ class MainWindow(QMainWindow):
             self.qle_hex.setText('—')
 
         else:
-            guid_map = binascii.unhexlify(guid.translate(str.maketrans('', '', '-\r\n ')))
+            guid_map = binascii.unhexlify(guid.translate(str.maketrans('', '',
+                                                                     '-\r\n ')))
             hexvalue = ''.join(map(bytes.decode, map(
                         binascii.hexlify,(guid_map[3::-1],
                                           guid_map[5:3:-1],
